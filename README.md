@@ -119,7 +119,7 @@ Learn more about Bayespam here: [https://docs.rs/bayespam](https://docs.rs/bayes
 
 ## Contribution
 
-Contribution via issues or pull requests are appreciated.
+Contributions via issues or pull requests are appreciated.
 
 ## License
 
