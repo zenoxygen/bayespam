@@ -1,4 +1,9 @@
-# bayespam [![Build Status](https://travis-ci.com/zenoxygen/bayespam.svg?branch=master)](https://travis-ci.com/zenoxygen/bayespam)
+# bayespam
+
+[![Build Status](https://travis-ci.com/zenoxygen/bayespam.svg?branch=master)](https://travis-ci.com/zenoxygen/bayespam)
+[![Crates.io](https://img.shields.io/crates/v/bayespam.svg)](https://crates.io/crates/bayespam)
+[![Docs](https://docs.rs/bayespam/badge.svg)](https://docs.rs/bayespam)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A simple bayesian spam classifier.
 
@@ -19,7 +24,7 @@ Add to your `Cargo.toml`:
 
 ```ini
 [dependencies]
-bayespam = "0.1.0"
+bayespam = "0.1.1"
 ```
 
 ### Use the pre-trained model provided
@@ -107,6 +112,10 @@ classifier.save("my_super_model.json")
 $> cat my_super_model.json
 {"spam_count_total":9,"ham_count_total":6,"token_table":{"men":[0,1],"dont":[1,1],"shoes":[0,1],"today":[1,1],"promotion:":[0,1],"only":[0,1],"bob":[1,0],"meeting":[1,0],"forget":[1,1],"our":[1,1],"special":[0,1]}}
 ```
+
+## Documentation
+
+Learn more about Bayespam here: [https://docs.rs/bayespam](https://docs.rs/bayespam).
 
 ## Contribution
 
