@@ -39,14 +39,12 @@
 //!
 //! fn main() {
 //!     // Classify a typical spam message
-//!     let m1 = String::from("Lose up to 19% weight. Special promotion on our new weightloss.");
-//!     let is_spam: bool = classifier::is_spam(&m1);
-//!     assert_eq!(is_spam, true);
+//!     let m1 = "Lose up to 19% weight. Special promotion on our new weightloss.";
+//!     assert!(classifier::is_spam(m1));
 //!
 //!     // Classifiy a typical ham message
-//!     let m2 = String::from("Hi Bob, can you send me your machine learning homework?");
-//!     let is_spam: bool = classifier::is_spam(&m2);
-//!     assert_eq!(is_spam, false);
+//!     let m2 = "Hi Bob, can you send me your machine learning homework?";
+//!     assert!(!classifier::is_spam(m2));
 //! }
 //! ```
 //!
@@ -59,25 +57,25 @@
 //!
 //! fn main() {
 //!     // Create a new classifier with an empty model
-//!     let mut classifier = Classifier::new("my_super_model.json", true);
+//!     let mut classifier = Classifier::new();
 //!
 //!     // Train the model with a new spam example
-//!     let spam = String::from("Don't forget our special promotion: -30% on men shoes, only today!");
-//!     classifier.train(&spam, true);
+//!     let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
+//!     classifier.train(spam, true);
 //!
 //!     // Train the model with a new ham example
-//!     let ham = String::from("Hi Bob, don't forget our meeting today at 4pm.");
-//!     classifier.train(&ham, false);
+//!     let ham = "Hi Bob, don't forget our meeting today at 4pm.";
+//!     classifier.train(ham, false);
 //!
 //!     // Classify a typical spam message
-//!     let m1 = String::from("Lose up to 19% weight. Special promotion on our new weightloss.");
-//!     let is_spam: bool = classifier.is_spam(&m1);
-//!     assert_eq!(is_spam, true);
+//!     let m1 = "Lose up to 19% weight. Special promotion on our new weightloss.";
+//!     let is_spam = classifier.is_spam(m1);
+//!     assert!(is_spam);
 //!
 //!     // Classifiy a typical ham message
-//!     let m2 = String::from("Hi Bob, can you send me your machine learning homework?");
-//!     let is_spam: bool = classifier.is_spam(&m2);
-//!     assert_eq!(is_spam, false);
+//!     let m2 = "Hi Bob, can you send me your machine learning homework?";
+//!     let is_spam = classifier.is_spam(m2);
+//!     assert!(!is_spam);
 //! }
 //! ```
 
