@@ -62,7 +62,7 @@ impl Classifier {
     /// and keep only the words with a length greater than 2.
     ///
     /// * `msg` - String. Represents the message.
-    fn get_word_list(msg: &str) -> Vec<String> {
+    fn load_word_list(msg: &str) -> Vec<String> {
         msg.replace(
             |c: char| !(c.is_lowercase() || c.is_uppercase() || c.is_whitespace() || c == ':'),
             "",
@@ -86,7 +86,7 @@ impl Classifier {
     ///
     /// * `msg` - String. Represents the spam message.
     pub fn train_spam(&mut self, msg: &str) {
-        for word in Self::get_word_list(msg) {
+        for word in Self::load_word_list(msg) {
             let counter = self.model.token_table.entry(word).or_default();
             counter.spam += 1;
         }
@@ -96,7 +96,7 @@ impl Classifier {
     ///
     /// * `msg` - String. Represents the ham message.
     pub fn train_ham(&mut self, msg: &str) {
-        for word in Self::get_word_list(msg) {
+        for word in Self::load_word_list(msg) {
             let counter = self.model.token_table.entry(word).or_default();
             counter.ham += 1;
         }
@@ -115,7 +115,7 @@ impl Classifier {
     ///
     /// * `msg` - String. Represents the message to score.
     pub fn score(&self, msg: &str) -> f32 {
-        let ratings: Vec<_> = Self::get_word_list(msg)
+        let ratings: Vec<_> = Self::load_word_list(msg)
             .into_iter()
             .map(|word| {
                 if let Some(counter) = self.model.token_table.get(&word) {
