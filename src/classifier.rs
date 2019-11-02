@@ -112,43 +112,65 @@ impl Classifier {
         self.model.token_table.values().map(|x| x.ham).sum()
     }
 
-    /// Calculate and return the spam score of the message.
-    /// The higher the score, the stronger the liklihood that the message is a spam is.
+    /// Calculate and return for each word the probability that it is part of a spam.
     ///
     /// * `msg` - String. Represents the message to score.
-    pub fn score(&self, msg: &str) -> f32 {
-        let ratings: Vec<_> = Self::load_word_list(msg)
+    fn rate_words(&self, msg: &str) -> Vec<f32> {
+        Self::load_word_list(msg)
             .into_iter()
             .map(|word| {
+                // If word was previously added in the model
                 if let Some(counter) = self.model.token_table.get(&word) {
+                    // If the word has only been part of spam messages,
+                    // assign it a probability of 0.99 to be part of a spam
                     if counter.spam > 0 && counter.ham == 0 {
                         return 0.99;
+                    // If the word has only been part of ham messages,
+                    // assign it a probability of 0.01 to be part of a spam
                     } else if counter.spam == 0 && counter.ham > 0 {
                         return 0.01;
+                    // If the word has been part of both spam and ham messages,
+                    // calculate the probability to be part of a spam
                     } else if self.spam_total_count() > 0 && self.ham_total_count() > 0 {
                         let ham_prob = (counter.ham as f32) / (self.ham_total_count() as f32);
                         let spam_prob = (counter.spam as f32) / (self.spam_total_count() as f32);
                         return (spam_prob / (ham_prob + spam_prob)).max(0.01);
                     }
                 }
+                // If word was never added to the model,
+                // assign it an initial probability to be part of a spam
                 INIT_RATING
             })
-            .collect();
+            .collect()
+    }
 
+    /// Calculate and return the spam score of the message.
+    /// The higher the score, the stronger the liklihood that the message is a spam is.
+    ///
+    /// * `msg` - String. Represents the message to score.
+    pub fn score(&self, msg: &str) -> f32 {
+        // Calculate for each word the probability that it is part of a spam
+        let ratings = self.rate_words(msg);
+
+        // If there are no ratings, return a score of 0
+        // If there are more than 20 ratings, keep only the 10 first
+        // and 10 last ratings to calculate a score
+        // In all other cases, keep ratings to calculate a score
         let ratings = match ratings.len() {
             0 => return 0.0,
             x if x > 20 => {
                 let length = ratings.len();
                 let mut ratings = ratings;
-                ratings.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap()); //this is actually okay, because we check if the numerator or denominiator is zero
+                ratings.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
                 [&ratings[..10], &ratings[length - 10..]].concat()
             }
             _ => ratings,
         };
 
+        // Calculate the final score of the message to be a spam,
+        // by multiplying all word ratings together
         let product: f32 = ratings.iter().product();
         let alt_product: f32 = ratings.iter().map(|x| 1.0 - x).product();
-
         product / (product + alt_product)
     }
 
