@@ -102,10 +102,12 @@ impl Classifier {
         }
     }
 
+    /// Return the total number of spam in token table.
     fn spam_total_count(&self) -> u32 {
         self.model.token_table.values().map(|x| x.spam).sum()
     }
 
+    /// Return the total number of ham in token table.
     fn ham_total_count(&self) -> u32 {
         self.model.token_table.values().map(|x| x.ham).sum()
     }
