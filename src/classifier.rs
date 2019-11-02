@@ -82,19 +82,23 @@ impl Classifier {
         self.model.save(file, pretty)
     }
 
-    /// Train the model of the classifier.
+    /// Train the model of the classifier with a spam.
     ///
-    /// * `msg` - String. Represents the message.
-    /// * `is_spam` - Boolean. If `true`, train the message as a spam.
-    /// If `false`, train the message as ham.
-    pub fn train(&mut self, msg: &str, is_spam: bool) {
+    /// * `msg` - String. Represents the spam message.
+    pub fn train_spam(&mut self, msg: &str) {
         for word in Self::get_word_list(msg) {
             let counter = self.model.token_table.entry(word).or_default();
-            if is_spam {
-                counter.spam += 1;
-            } else {
-                counter.ham += 1;
-            }
+            counter.spam += 1;
+        }
+    }
+
+    /// Train the model of the classifier with a ham.
+    ///
+    /// * `msg` - String. Represents the ham message.
+    pub fn train_ham(&mut self, msg: &str) {
+        for word in Self::get_word_list(msg) {
+            let counter = self.model.token_table.entry(word).or_default();
+            counter.ham += 1;
         }
     }
 
@@ -183,20 +187,20 @@ mod tests {
 
         // Train the model with a new spam example
         let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
-        classifier.train(spam, true);
+        classifier.train_spam(spam);
 
         // Train the model with a new ham example
         let ham = "Hi Bob, don't forget our meeting today at 4pm.";
-        classifier.train(ham, false);
+        classifier.train_ham(ham);
 
         // Classify a typical spam message
-        let m1 = "Lose up to 19% weight. Special promotion on our new weightloss.";
-        let is_spam = classifier.is_spam(m1);
+        let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+        let is_spam = classifier.is_spam(spam);
         assert!(is_spam);
 
         // Classifiy a typical ham message
-        let m2 = "Hi Bob, can you send me your machine learning homework?";
-        let is_spam = classifier.is_spam(m2);
+        let ham = "Hi Bob, can you send me your machine learning homework?";
+        let is_spam = classifier.is_spam(ham);
         assert!(!is_spam);
     }
 }

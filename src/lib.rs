@@ -39,12 +39,12 @@
 //!
 //! fn main() {
 //!     // Classify a typical spam message
-//!     let m1 = "Lose up to 19% weight. Special promotion on our new weightloss.";
-//!     assert!(classifier::is_spam(m1));
+//!     let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+//!     assert!(classifier::is_spam(spam));
 //!
-//!     // Classifiy a typical ham message
-//!     let m2 = "Hi Bob, can you send me your machine learning homework?";
-//!     assert!(!classifier::is_spam(m2));
+//!     // Classify a typical ham message
+//!     let ham = "Hi Bob, can you send me your machine learning homework?";
+//!     assert!(!classifier::is_spam(ham));
 //! }
 //! ```
 //!
@@ -61,20 +61,20 @@
 //!
 //!     // Train the model with a new spam example
 //!     let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
-//!     classifier.train(spam, true);
+//!     classifier.train_spam(spam);
 //!
 //!     // Train the model with a new ham example
 //!     let ham = "Hi Bob, don't forget our meeting today at 4pm.";
-//!     classifier.train(ham, false);
+//!     classifier.train_ham(ham);
 //!
 //!     // Classify a typical spam message
-//!     let m1 = "Lose up to 19% weight. Special promotion on our new weightloss.";
-//!     let is_spam = classifier.is_spam(m1);
+//!     let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+//!     let is_spam = classifier.is_spam(spam);
 //!     assert!(is_spam);
 //!
 //!     // Classifiy a typical ham message
-//!     let m2 = "Hi Bob, can you send me your machine learning homework?";
-//!     let is_spam = classifier.is_spam(m2);
+//!     let ham = "Hi Bob, can you send me your machine learning homework?";
+//!     let is_spam = classifier.is_spam(ham);
 //!     assert!(!is_spam);
 //! }
 //! ```
