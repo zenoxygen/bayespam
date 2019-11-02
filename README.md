@@ -36,81 +36,81 @@ use bayespam::classifier;
 
 fn main() {
     // Classify a typical spam message
-    let m1 = String::from("Lose up to 19% weight. Special promotion on our new weightloss.");
-    let score: f32 = classifier::score(&m1);
-    let is_spam: bool = classifier::is_spam(&m1);
-    println!("{}", score);
+    let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+    let score = classifier::score(spam);
+    let is_spam = classifier::is_spam(spam);
+    println!("{:.4}", score);
     println!("{}", is_spam);
 
     // Classifiy a typical ham message
-    let m2 = String::from("Hi Bob, can you send me your machine learning homework?");
-    let score: f32 = classifier::score(&m2);
-    let is_spam: bool = classifier::is_spam(&m2);
-    println!("{}", score);
+    let ham = "Hi Bob, can you send me your machine learning homework?";
+    let score = classifier::score(ham);
+    let is_spam = classifier::is_spam(ham);
+    println!("{:.4}", score);
     println!("{}", is_spam);
 }
 ```
 
 ```bash
 $> cargo run
-0.99974066
+0.9999
 true
-0.0075160516
+0.0187
 false
 ```
 
-### Train your own model
+### Train your own model and save it
 
 ```rust
 extern crate bayespam;
+
+use std::fs::File;
 
 use bayespam::classifier::Classifier;
 
 fn main() {
     // Create a new classifier with an empty model
-    let mut classifier = Classifier::new("my_super_model.json", true);
+    let mut classifier = Classifier::new();
 
     // Train the model with a new spam example
-    let spam = String::from("Don't forget our special promotion: -30% on men shoes, only today!");
-    classifier.train(&spam, true);
+    let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
+    classifier.train_spam(spam);
 
     // Train the model with a new ham example
-    let ham = String::from("Hi Bob, don't forget our meeting today at 4pm.");
-    classifier.train(&ham, false);
+    let ham = "Hi Bob, don't forget our meeting today at 4pm.";
+    classifier.train_ham(ham);
 
     // Classify a typical spam message
-    let m1 = String::from("Lose up to 19% weight. Special promotion on our new weightloss.");
-    let score: f32 = classifier.score(&m1);
-    let is_spam: bool = classifier.is_spam(&m1);
-    println!("{}", score);
+    let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+    let score = classifier.score(spam);
+    let is_spam = classifier.is_spam(spam);
+    println!("{:.4}", score);
     println!("{}", is_spam);
 
     // Classifiy a typical ham message
-    let m2 = String::from("Hi Bob, can you send me your machine learning homework?");
-    let score: f32 = classifier.score(&m2);
-    let is_spam: bool = classifier.is_spam(&m2);
-    println!("{}", score);
+    let ham = "Hi Bob, can you send me your machine learning homework?";
+    let score = classifier.score(ham);
+    let is_spam = classifier.is_spam(ham);
+    println!("{:.4}", score);
     println!("{}", is_spam);
+
+    // Serialize the model and save it as JSON into a file
+    let mut file = File::create("my_super_model.json").expect("Failed to open file.");
+    classifier.save(&mut file, false);
 }
 ```
 
 ```bash
 $> cargo run
-0.89681536
+0.8968
 true
-0.00059083913
+0.0006
 false
-```
-
-### Save your model
-
-```rust
-classifier.save("my_super_model.json")
 ```
 
 ```bash
 $> cat my_super_model.json
-{"spam_count_total":9,"ham_count_total":6,"token_table":{"men":[0,1],"dont":[1,1],"shoes":[0,1],"today":[1,1],"promotion:":[0,1],"only":[0,1],"bob":[1,0],"meeting":[1,0],"forget":[1,1],"our":[1,1],"special":[0,1]}}
+{"token_table":{"forget":{"ham":1,"spam":1},"only":{"ham":0,"spam":1},"meeting":{"ham":1,"spam":0},"our":{"ham":1,"spam":1},"dont":{"ham":1,"spam":1},"bob":{"ham":1,"spam":0},"men":{"ham":0,"spam":1},"today":{"ham":1,"spam":1},"shoes":{"ham":0,"spam":1},"special":{"ham":0,"spam":1},"promotion:":{"ham":0,"spam":1}}}
 ```
 
 ## Documentation
