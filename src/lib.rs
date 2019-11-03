@@ -19,7 +19,7 @@
 //!
 //! ```ini
 //! [dependencies]
-//! bayespam = "0.2.0"
+//! bayespam = "0.2.1"
 //! ```
 //!
 //! And to your crate root:
