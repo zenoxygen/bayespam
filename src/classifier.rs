@@ -28,7 +28,7 @@ pub struct Classifier {
 }
 
 impl Model {
-    /// Load a pre-trained model from the given file.
+    /// Load a pre-trained `Model` from the given file.
     ///
     /// * `file` - File. The file to read the pre-trained model from.
     fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
@@ -39,7 +39,7 @@ impl Model {
         Ok(pre_trained_model)
     }
 
-    /// Save the model into the given file.
+    /// Save the `Model` into the given file.
     ///
     /// * `file` - File. The file to write to.
     /// * `pretty` - Boolean. Pretty-printed JSON or not.
@@ -57,12 +57,12 @@ impl Model {
 }
 
 impl Classifier {
-    /// Build a new `Classifier` with an empty model.
+    /// Build a new `Classifier` with an empty `Model`.
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Build a new `Classifier` with a pre-trained model.
+    /// Build a new `Classifier` with a pre-trained `Model`.
     ///
     /// * `file` - File. The file to read the pre-trained model from.
     pub fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
@@ -90,7 +90,7 @@ impl Classifier {
         .collect()
     }
 
-    /// Save the model into the given file.
+    /// Save the `Model` into the given file.
     ///
     /// * `file` - File. The file to write to.
     /// * `pretty` - Boolean. Pretty-printed JSON or not.
@@ -100,7 +100,7 @@ impl Classifier {
         Ok(())
     }
 
-    /// Train the model of the classifier with a spam.
+    /// Train the `Model` of the `Classifier` with a spam.
     ///
     /// * `msg` - String. Represents the spam message.
     pub fn train_spam(&mut self, msg: &str) {
@@ -110,7 +110,7 @@ impl Classifier {
         }
     }
 
-    /// Train the model of the classifier with a ham.
+    /// Train the `Model` of the `Classifier` with a ham.
     ///
     /// * `msg` - String. Represents the ham message.
     pub fn train_ham(&mut self, msg: &str) {
@@ -130,7 +130,7 @@ impl Classifier {
         self.model.token_table.values().map(|x| x.ham).sum()
     }
 
-    /// Calculate and return for each word the probability that it is part of a spam.
+    /// Calculate for each word the probability that it is part of a spam.
     ///
     /// * `msg` - String. Represents the message to score.
     fn rate_words(&self, msg: &str) -> Vec<f32> {
@@ -170,18 +170,19 @@ impl Classifier {
         // Calculate for each word the probability that it is part of a spam
         let ratings = self.rate_words(msg);
 
-        // If there are no ratings, return a score of 0
-        // If there are more than 20 ratings, keep only the 10 first
-        // and 10 last ratings to calculate a score
-        // In all other cases, keep ratings to calculate a score
+        // Check our ratings for the message
         let ratings = match ratings.len() {
+            // If there are no ratings, return a score of 0
             0 => return 0.0,
+            // If there are more than 20 ratings, keep only the 10 first
+            // and 10 last ratings to calculate a score
             x if x > 20 => {
                 let length = ratings.len();
                 let mut ratings = ratings;
                 ratings.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
                 [&ratings[..10], &ratings[length - 10..]].concat()
             }
+            // In all other cases, keep ratings to calculate a score
             _ => ratings,
         };
 
@@ -200,7 +201,7 @@ impl Classifier {
     }
 }
 
-/// Calculate and return the spam score of the message, based on the pre-trained model.
+/// Calculate the spam score of the message, based on the pre-trained model.
 /// The higher the score, the stronger the liklihood that the message is a spam is.
 ///
 /// * `msg` - String. Represents the message to score.
