@@ -1,6 +1,6 @@
 [package]
 name = "bayespam"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["zenoxygen <zenoxygen@protonmail.com>"]
 edition = "2018"
 
