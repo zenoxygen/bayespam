@@ -77,11 +77,11 @@ fn main() -> Result<(), std::io::Error> {
     // Create a new classifier with an empty model
     let mut classifier = Classifier::new();
 
-    // Train the model with a new spam example
+    // Train the classifier with a new spam example
     let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
     classifier.train_spam(spam);
 
-    // Train the model with a new ham example
+    // Train the classifier with a new ham example
     let ham = "Hi Bob, don't forget our meeting today at 4pm.";
     classifier.train_ham(ham);
 

@@ -28,27 +28,18 @@ pub struct Classifier {
 }
 
 impl Model {
-    /// Load a pre-trained `Model` from the given file.
-    ///
-    /// * `file` - File. The file to read the pre-trained model from.
+    /// Build a new `Model` loaded from `file`.
     fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
-        // Deserialize an instance of type `Model` from the file
         let pre_trained_model = from_reader(file)?;
-
-        // Return the `Model`
         Ok(pre_trained_model)
     }
 
-    /// Save the `Model` into the given file.
-    ///
-    /// * `file` - File. The file to write to.
-    /// * `pretty` - Boolean. Pretty-printed JSON or not.
+    /// Save the `Model` to `file` as JSON.
+    /// The JSON will be pretty printed if `pretty` is `true`.
     fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
         if pretty {
-            // Serialize the `Model` as JSON into the file
             to_writer_pretty(file, &self)?;
         } else {
-            // Serialize the `Model` as as pretty-printed JSON into the file
             to_writer(file, &self)?;
         }
 
@@ -57,14 +48,12 @@ impl Model {
 }
 
 impl Classifier {
-    /// Build a new `Classifier` with an empty `Model`.
+    /// Build a new `Classifier` with an empty model.
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Build a new `Classifier` with a pre-trained `Model`.
-    ///
-    /// * `file` - File. The file to read the pre-trained model from.
+    /// Build a new `Classifier` with a pre-trained model loaded from `file`.
     pub fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
         match Model::new_from_pre_trained(file) {
             Ok(pre_trained_model) => Ok(Classifier {
@@ -74,10 +63,8 @@ impl Classifier {
         }
     }
 
-    /// Return a list of strings which contains only alphabetic letters,
-    /// and keep only the words with a length greater than 2.
-    ///
-    /// * `msg` - String. Represents the message.
+    /// Split `msg` into a list of words which contains only alphabetic letters.
+    /// Keep only words with a length greater than 2.
     fn load_word_list(msg: &str) -> Vec<String> {
         msg.replace(
             |c: char| !(c.is_lowercase() || c.is_uppercase() || c.is_whitespace() || c == ':'),
@@ -90,19 +77,15 @@ impl Classifier {
         .collect()
     }
 
-    /// Save the `Model` into the given file.
-    ///
-    /// * `file` - File. The file to write to.
-    /// * `pretty` - Boolean. Pretty-printed JSON or not.
+    /// Save the model to `file` as JSON.
+    /// The JSON will be pretty printed if `pretty` is `true`.
     pub fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
         self.model.save(file, pretty)?;
 
         Ok(())
     }
 
-    /// Train the `Model` of the `Classifier` with a spam.
-    ///
-    /// * `msg` - String. Represents the spam message.
+    /// Train the classifier with a spam `msg`.
     pub fn train_spam(&mut self, msg: &str) {
         for word in Self::load_word_list(msg) {
             let counter = self.model.token_table.entry(word).or_default();
@@ -110,9 +93,7 @@ impl Classifier {
         }
     }
 
-    /// Train the `Model` of the `Classifier` with a ham.
-    ///
-    /// * `msg` - String. Represents the ham message.
+    /// Train the classifier with a ham `msg`.
     pub fn train_ham(&mut self, msg: &str) {
         for word in Self::load_word_list(msg) {
             let counter = self.model.token_table.entry(word).or_default();
@@ -130,9 +111,7 @@ impl Classifier {
         self.model.token_table.values().map(|x| x.ham).sum()
     }
 
-    /// Calculate for each word the probability that it is part of a spam.
-    ///
-    /// * `msg` - String. Represents the message to score.
+    /// Calculate for each word of `msg` the probability that it is part of a spam.
     fn rate_words(&self, msg: &str) -> Vec<f32> {
         Self::load_word_list(msg)
             .into_iter()
@@ -162,15 +141,13 @@ impl Classifier {
             .collect()
     }
 
-    /// Calculate and return the spam score of the message.
-    /// The higher the score, the stronger the liklihood that the message is a spam is.
-    ///
-    /// * `msg` - String. Represents the message to score.
+    /// Calculate the spam score of `msg`.
+    /// The higher the score, the stronger the liklihood that `msg` is a spam is.
     pub fn score(&self, msg: &str) -> f32 {
         // Calculate for each word the probability that it is part of a spam
         let ratings = self.rate_words(msg);
 
-        // Check our ratings for the message
+        // Check our ratings for `msg`
         let ratings = match ratings.len() {
             // If there are no ratings, return a score of 0
             0 => return 0.0,
@@ -186,25 +163,21 @@ impl Classifier {
             _ => ratings,
         };
 
-        // Calculate the final score of the message to be a spam,
+        // Calculate the final score of `msg` to be a spam,
         // by multiplying all word ratings together
         let product: f32 = ratings.iter().product();
         let alt_product: f32 = ratings.iter().map(|x| 1.0 - x).product();
         product / (product + alt_product)
     }
 
-    /// Identify whether the message is a spam or not.
-    ///
-    /// * `msg` - String. Represents the message to identify.
+    /// Identify whether `msg` is a spam or not.
     pub fn identify(&self, msg: &str) -> bool {
         self.score(msg) > SPAM_PROB_THRESHOLD
     }
 }
 
-/// Calculate the spam score of the message, based on the pre-trained model.
-/// The higher the score, the stronger the liklihood that the message is a spam is.
-///
-/// * `msg` - String. Represents the message to score.
+/// Calculate the spam score of `msg`, based on the pre-trained model.
+/// The higher the score, the stronger the liklihood that `msg` is a spam is.
 pub fn score(msg: &str) -> Result<f32, io::Error> {
     let mut f = match File::open(DEFAULT_FILE_PATH) {
         Ok(file) => file,
@@ -217,9 +190,7 @@ pub fn score(msg: &str) -> Result<f32, io::Error> {
     }
 }
 
-/// Identify whether the message is a spam or not, based on the pre-trained model.
-///
-/// * `msg` - String. Represents the message to identify.
+/// Identify whether `msg` is a spam or not, based on the pre-trained model.
 pub fn identify(msg: &str) -> Result<bool, io::Error> {
     let score = score(msg)?;
     let is_spam = score > SPAM_PROB_THRESHOLD;
@@ -236,11 +207,11 @@ mod tests {
         // Create a new classifier with an empty model
         let mut classifier = Classifier::new();
 
-        // Train the model with a new spam example
+        // Train the classifier with a new spam example
         let spam = "Don't forget our special promotion: -30% on men shoes, only today!";
         classifier.train_spam(spam);
 
-        // Train the model with a new ham example
+        // Train the classifier with a new ham example
         let ham = "Hi Bob, don't forget our meeting today at 4pm.";
         classifier.train_ham(ham);
 
