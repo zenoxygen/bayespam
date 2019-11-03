@@ -2,18 +2,20 @@ extern crate bayespam;
 
 use bayespam::classifier;
 
-fn main() {
+fn main() -> Result<(), std::io::Error> {
     // Classify a typical spam message
     let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
-    let score = classifier::score(spam);
-    let is_spam = classifier::is_spam(spam);
-    println!("{:.4}", score);
-    println!("{}", is_spam);
+    let score = classifier::score(spam)?;
+    let is_spam = classifier::identify(spam)?;
+    println!("{:.4?}", score);
+    println!("{:?}", is_spam);
 
-    // Classifiy a typical ham message
+    // Classify a typical ham message
     let ham = "Hi Bob, can you send me your machine learning homework?";
-    let score = classifier::score(ham);
-    let is_spam = classifier::is_spam(ham);
-    println!("{:.4}", score);
-    println!("{}", is_spam);
+    let score = classifier::score(ham)?;
+    let is_spam = classifier::identify(ham)?;
+    println!("{:.4?}", score);
+    println!("{:?}", is_spam);
+
+    Ok(())
 }

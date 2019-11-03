@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
+use std::io;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_writer, to_writer_pretty};
@@ -27,34 +28,49 @@ pub struct Classifier {
 }
 
 impl Model {
-    /// Load a model from the given file
-    fn new_from_file(file: &mut File) -> Self {
-        // TODO: propper error handling!
-        from_reader(file).expect("reading from file failed")
+    /// Load a pre-trained model from the given file.
+    ///
+    /// * `file` - File. The file to read the pre-trained model from.
+    fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
+        // Deserialize an instance of type `Model` from the file
+        let pre_trained_model = from_reader(file)?;
+
+        // Return the `Model`
+        Ok(pre_trained_model)
     }
 
-    /// Save the model into the file.
-    fn save(&self, file: &mut File, pretty: bool) {
-        // TODO: propper error handling!
+    /// Save the model into the given file.
+    ///
+    /// * `file` - File. The file to write to.
+    /// * `pretty` - Boolean. Pretty-printed JSON or not.
+    fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
         if pretty {
-            to_writer_pretty(file, &self)
+            // Serialize the `Model` as JSON into the file
+            to_writer_pretty(file, &self)?;
         } else {
-            to_writer(file, &self)
+            // Serialize the `Model` as as pretty-printed JSON into the file
+            to_writer(file, &self)?;
         }
-        .expect("writing to file failed")
+
+        Ok(())
     }
 }
 
 impl Classifier {
-    /// Build a new `Classifier` with an empty model
+    /// Build a new `Classifier` with an empty model.
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Build a new `Classifier` trained from a the given `file`.
-    pub fn new_from_file(file: &mut File) -> Self {
-        Classifier {
-            model: Model::new_from_file(file),
+    /// Build a new `Classifier` with a pre-trained model.
+    ///
+    /// * `file` - File. The file to read the pre-trained model from.
+    pub fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
+        match Model::new_from_pre_trained(file) {
+            Ok(pre_trained_model) => Ok(Classifier {
+                model: pre_trained_model,
+            }),
+            Err(e) => Err(e),
         }
     }
 
@@ -74,12 +90,14 @@ impl Classifier {
         .collect()
     }
 
-    /// Save the model in a file.
+    /// Save the model into the given file.
     ///
-    /// * `file` - File. The file to write to
-    /// * `pretty` - bool. Pretty printing or not
-    pub fn save(&self, file: &mut File, pretty: bool) {
-        self.model.save(file, pretty)
+    /// * `file` - File. The file to write to.
+    /// * `pretty` - Boolean. Pretty-printed JSON or not.
+    pub fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
+        self.model.save(file, pretty)?;
+
+        Ok(())
     }
 
     /// Train the model of the classifier with a spam.
@@ -174,30 +192,38 @@ impl Classifier {
         product / (product + alt_product)
     }
 
-    /// Decide whether the message is a spam or not.
+    /// Identify whether the message is a spam or not.
     ///
-    /// * `msg` - String. Represents the message to classify.
-    pub fn is_spam(&self, msg: &str) -> bool {
+    /// * `msg` - String. Represents the message to identify.
+    pub fn identify(&self, msg: &str) -> bool {
         self.score(msg) > SPAM_PROB_THRESHOLD
     }
 }
 
-/// Calculate and return the spam score of the message,
-/// based on the pre-trained model.
+/// Calculate and return the spam score of the message, based on the pre-trained model.
+/// The higher the score, the stronger the liklihood that the message is a spam is.
 ///
 /// * `msg` - String. Represents the message to score.
-pub fn score(msg: &str) -> f32 {
-    // TODO: propper error handling!
-    let mut file = File::open(DEFAULT_FILE_PATH).expect("Failed to open file");
-    Classifier::new_from_file(&mut file).score(msg)
+pub fn score(msg: &str) -> Result<f32, io::Error> {
+    let mut f = match File::open(DEFAULT_FILE_PATH) {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    match Classifier::new_from_pre_trained(&mut f) {
+        Ok(classifier) => Ok(classifier.score(msg)),
+        Err(e) => Err(e),
+    }
 }
 
-/// Decide whether the message is a spam or not,
-/// based on the pre-trained model.
+/// Identify whether the message is a spam or not, based on the pre-trained model.
 ///
-/// * `msg` - String. Represents the message to classify.
-pub fn is_spam(msg: &str) -> bool {
-    score(msg) > SPAM_PROB_THRESHOLD
+/// * `msg` - String. Represents the message to identify.
+pub fn identify(msg: &str) -> Result<bool, io::Error> {
+    let score = score(msg)?;
+    let is_spam = score > SPAM_PROB_THRESHOLD;
+
+    Ok(is_spam)
 }
 
 #[cfg(test)]
@@ -205,7 +231,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_is_spam() {
+    fn test_new() {
         // Create a new classifier with an empty model
         let mut classifier = Classifier::new();
 
@@ -217,14 +243,29 @@ mod tests {
         let ham = "Hi Bob, don't forget our meeting today at 4pm.";
         classifier.train_ham(ham);
 
-        // Classify a typical spam message
+        // Identify a typical spam message
         let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
-        let is_spam = classifier.is_spam(spam);
+        let is_spam = classifier.identify(spam);
         assert!(is_spam);
 
-        // Classifiy a typical ham message
+        // Identify a typical ham message
         let ham = "Hi Bob, can you send me your machine learning homework?";
-        let is_spam = classifier.is_spam(ham);
+        let is_spam = classifier.identify(ham);
         assert!(!is_spam);
+    }
+
+    #[test]
+    fn test_new_from_pre_trained() -> Result<(), io::Error> {
+        // Identify a typical spam message
+        let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
+        let is_spam = identify(spam)?;
+        assert!(is_spam);
+
+        // Identify a typical ham message
+        let ham = "Hi Bob, can you send me your machine learning homework?";
+        let is_spam = identify(ham)?;
+        assert!(!is_spam);
+
+        Ok(())
     }
 }

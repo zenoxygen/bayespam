@@ -37,14 +37,18 @@
 //!
 //! use bayespam::classifier;
 //!
-//! fn main() {
-//!     // Classify a typical spam message
+//! fn main() -> Result<(), std::io::Error> {
+//!     // Identify a typical spam message
 //!     let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
-//!     assert!(classifier::is_spam(spam));
+//!     let is_spam = classifier::identify(spam)?;
+//!     assert!(is_spam);
 //!
-//!     // Classify a typical ham message
+//!     // Identify a typical ham message
 //!     let ham = "Hi Bob, can you send me your machine learning homework?";
-//!     assert!(!classifier::is_spam(ham));
+//!     let is_spam = classifier::identify(ham)?;
+//!     assert!(!is_spam);
+//!
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -67,14 +71,14 @@
 //!     let ham = "Hi Bob, don't forget our meeting today at 4pm.";
 //!     classifier.train_ham(ham);
 //!
-//!     // Classify a typical spam message
+//!     // Identify a typical spam message
 //!     let spam = "Lose up to 19% weight. Special promotion on our new weightloss.";
-//!     let is_spam = classifier.is_spam(spam);
+//!     let is_spam = classifier.identify(spam);
 //!     assert!(is_spam);
 //!
-//!     // Classifiy a typical ham message
+//!     // Identify a typical ham message
 //!     let ham = "Hi Bob, can you send me your machine learning homework?";
-//!     let is_spam = classifier.is_spam(ham);
+//!     let is_spam = classifier.identify(ham);
 //!     assert!(!is_spam);
 //! }
 //! ```
