@@ -61,7 +61,7 @@ fn main() -> Result<(), std::io::Error> {
 $> cargo run
 0.9999
 true
-0.0187
+0.0604
 false
 ```
 
@@ -109,9 +109,9 @@ fn main() -> Result<(), std::io::Error> {
 
 ```bash
 $> cargo run
-0.8968
+0.9851
 true
-0.0006
+0.0100
 false
 ```
 
