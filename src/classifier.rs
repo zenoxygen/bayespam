@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_writer, to_writer_pretty};
 
 const DEFAULT_FILE_PATH: &str = "model.json";
-const INIT_RATING: f32 = 0.4;
+const INITIAL_RATING: f32 = 0.5;
 const SPAM_PROB_THRESHOLD: f32 = 0.8;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -109,7 +109,7 @@ impl Classifier {
                 }
                 // If word was never added to the model,
                 // assign it an initial probability to be part of a spam
-                INIT_RATING
+                INITIAL_RATING
             })
             .collect()
     }
