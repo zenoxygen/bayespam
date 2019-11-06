@@ -15,36 +15,10 @@ struct Counter {
     spam: u32,
 }
 
-/// A model.
-#[derive(Default, Debug, Serialize, Deserialize)]
-struct Model {
-    token_table: HashMap<String, Counter>,
-}
-
 /// A bayesian spam classifier.
-#[derive(Debug, Default)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Classifier {
-    model: Model,
-}
-
-impl Model {
-    /// Build a new `Model` loaded from `file`.
-    fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
-        let pre_trained_model = from_reader(file)?;
-        Ok(pre_trained_model)
-    }
-
-    /// Save the `Model` to `file` as JSON.
-    /// The JSON will be pretty printed if `pretty` is `true`.
-    fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
-        if pretty {
-            to_writer_pretty(file, &self)?;
-        } else {
-            to_writer(file, &self)?;
-        }
-
-        Ok(())
-    }
+    token_table: HashMap<String, Counter>,
 }
 
 impl Classifier {
@@ -55,12 +29,19 @@ impl Classifier {
 
     /// Build a new `Classifier` with a pre-trained model loaded from `file`.
     pub fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
-        match Model::new_from_pre_trained(file) {
-            Ok(pre_trained_model) => Ok(Classifier {
-                model: pre_trained_model,
-            }),
-            Err(e) => Err(e),
+        let pre_trained_model = from_reader(file)?;
+        Ok(pre_trained_model)
+    }
+
+    /// Save the `Classifier` to `file` as JSON.
+    /// The JSON will be pretty printed if `pretty` is `true`.
+    pub fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
+        if pretty {
+            to_writer_pretty(file, &self)?;
+        } else {
+            to_writer(file, &self)?;
         }
+        Ok(())
     }
 
     /// Split `msg` into a list of words which contains only alphabetic letters.
@@ -77,18 +58,10 @@ impl Classifier {
         .collect()
     }
 
-    /// Save the model to `file` as JSON.
-    /// The JSON will be pretty printed if `pretty` is `true`.
-    pub fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
-        self.model.save(file, pretty)?;
-
-        Ok(())
-    }
-
     /// Train the classifier with a spam `msg`.
     pub fn train_spam(&mut self, msg: &str) {
         for word in Self::load_word_list(msg) {
-            let counter = self.model.token_table.entry(word).or_default();
+            let counter = self.token_table.entry(word).or_default();
             counter.spam += 1;
         }
     }
@@ -96,28 +69,28 @@ impl Classifier {
     /// Train the classifier with a ham `msg`.
     pub fn train_ham(&mut self, msg: &str) {
         for word in Self::load_word_list(msg) {
-            let counter = self.model.token_table.entry(word).or_default();
+            let counter = self.token_table.entry(word).or_default();
             counter.ham += 1;
         }
     }
 
     /// Return the total number of spam in token table.
     fn spam_total_count(&self) -> u32 {
-        self.model.token_table.values().map(|x| x.spam).sum()
+        self.token_table.values().map(|x| x.spam).sum()
     }
 
     /// Return the total number of ham in token table.
     fn ham_total_count(&self) -> u32 {
-        self.model.token_table.values().map(|x| x.ham).sum()
+        self.token_table.values().map(|x| x.ham).sum()
     }
 
-    /// Calculate for each word of `msg` the probability that it is part of a spam.
+    /// Compute the probability of each word of `msg` to be part of a spam.
     fn rate_words(&self, msg: &str) -> Vec<f32> {
         Self::load_word_list(msg)
             .into_iter()
             .map(|word| {
                 // If word was previously added in the model
-                if let Some(counter) = self.model.token_table.get(&word) {
+                if let Some(counter) = self.token_table.get(&word) {
                     // If the word has only been part of spam messages,
                     // assign it a probability of 0.99 to be part of a spam
                     if counter.spam > 0 && counter.ham == 0 {
@@ -141,13 +114,12 @@ impl Classifier {
             .collect()
     }
 
-    /// Calculate the spam score of `msg`.
+    /// Compute the spam score of `msg`.
     /// The higher the score, the stronger the liklihood that `msg` is a spam is.
     pub fn score(&self, msg: &str) -> f32 {
-        // Calculate for each word the probability that it is part of a spam
+        // Compute the probability of each word to be part of a spam
         let ratings = self.rate_words(msg);
 
-        // Check our ratings for `msg`
         let ratings = match ratings.len() {
             // If there are no ratings, return a score of 0
             0 => return 0.0,
@@ -163,8 +135,7 @@ impl Classifier {
             _ => ratings,
         };
 
-        // Calculate the final score of `msg` to be a spam,
-        // by multiplying all word ratings together
+        // Combine individual probabilities
         let product: f32 = ratings.iter().product();
         let alt_product: f32 = ratings.iter().map(|x| 1.0 - x).product();
         product / (product + alt_product)
@@ -176,25 +147,17 @@ impl Classifier {
     }
 }
 
-/// Calculate the spam score of `msg`, based on the pre-trained model.
+/// Compute the spam score of `msg`, based on the pre-trained model.
 /// The higher the score, the stronger the liklihood that `msg` is a spam is.
 pub fn score(msg: &str) -> Result<f32, io::Error> {
-    let mut f = match File::open(DEFAULT_FILE_PATH) {
-        Ok(file) => file,
-        Err(e) => return Err(e),
-    };
-
-    match Classifier::new_from_pre_trained(&mut f) {
-        Ok(classifier) => Ok(classifier.score(msg)),
-        Err(e) => Err(e),
-    }
+    let mut file = File::open(DEFAULT_FILE_PATH)?;
+    Classifier::new_from_pre_trained(&mut file).map(|classifier| classifier.score(msg))
 }
 
 /// Identify whether `msg` is a spam or not, based on the pre-trained model.
 pub fn identify(msg: &str) -> Result<bool, io::Error> {
     let score = score(msg)?;
     let is_spam = score > SPAM_PROB_THRESHOLD;
-
     Ok(is_spam)
 }
 
