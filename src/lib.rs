@@ -9,9 +9,9 @@
 //! Here, the message to be identified is cut into simple words, also called tokens.
 //! That are compared to all the corpus of messages (spam or not), to determine the frequency of different tokens in both categories.
 //!
-//! A probabilistic formula is used to calculate the probability that the message is spam or not.
-//! When the probability is high enough, the bayesian system categorizes the message as spam.
-//! Otherwise, he lets it pass. The probability threshold is fixed at 0.8 by default.
+//! A probabilistic formula is used to calculate the probability that the message is a spam.
+//! When the probability is high enough, the classifier categorizes the message as likely a spam, otherwise as likely a ham.
+//! The probability threshold is fixed at 0.8 by default.
 //!
 //! ## Usage
 //!

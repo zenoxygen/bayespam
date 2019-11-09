@@ -22,18 +22,18 @@ pub struct Classifier {
 }
 
 impl Classifier {
-    /// Build a new `Classifier` with an empty model.
+    /// Build a new classifier with an empty model.
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Build a new `Classifier` with a pre-trained model loaded from `file`.
+    /// Build a new classifier with a pre-trained model loaded from `file`.
     pub fn new_from_pre_trained(file: &mut File) -> Result<Self, io::Error> {
         let pre_trained_model = from_reader(file)?;
         Ok(pre_trained_model)
     }
 
-    /// Save the `Classifier` to `file` as JSON.
+    /// Save the classifier to `file` as JSON.
     /// The JSON will be pretty printed if `pretty` is `true`.
     pub fn save(&self, file: &mut File, pretty: bool) -> Result<(), io::Error> {
         if pretty {
@@ -135,7 +135,7 @@ impl Classifier {
             _ => ratings,
         };
 
-        // Combine individual probabilities
+        // Combine individual ratings
         let product: f32 = ratings.iter().product();
         let alt_product: f32 = ratings.iter().map(|x| 1.0 - x).product();
         product / (product + alt_product)
