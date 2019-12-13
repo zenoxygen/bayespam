@@ -22,15 +22,9 @@
 //! bayespam = "1.0.0"
 //! ```
 //!
-//! And to your crate root:
-//!
-//! ```
-//! extern crate bayespam;
-//!
-//! use bayespam::classifier::Classifier;
-//! ```
-//!
 //! ### Use the pre-trained model provided
+//!
+//! Add the [model.json](model.json) file to your **package root**.
 //!
 //! ```
 //! extern crate bayespam;
