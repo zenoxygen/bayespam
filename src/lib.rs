@@ -19,7 +19,7 @@
 //!
 //! ```ini
 //! [dependencies]
-//! bayespam = "1.0.1"
+//! bayespam = "1.0.2"
 //! ```
 //!
 //! ### Use a pre-trained model
