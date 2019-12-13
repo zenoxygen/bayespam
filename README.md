@@ -24,16 +24,17 @@ Learn more about Bayespam here: [https://docs.rs/bayespam](https://docs.rs/bayes
 
 ## Usage
 
-Add to your `Cargo.toml`:
+Add to your `Cargo.toml` manifest:
 
 ```ini
 [dependencies]
 bayespam = "1.0.1"
 ```
 
-### Use the pre-trained model provided
+### Use a pre-trained model
 
-Add the [model.json](model.json) file to your **package root**.
+Add a `model.json` file to your **package root**.
+Then, you can use it to **score** and **identify** messages:
 
 ```rust
 extern crate bayespam;
@@ -68,6 +69,8 @@ false
 ```
 
 ### Train your own model and save it as JSON into a file
+
+You can train a new model from scratch, save it as JSON to reload it later:
 
 ```rust
 extern crate bayespam;
