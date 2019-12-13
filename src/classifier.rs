@@ -147,14 +147,14 @@ impl Classifier {
     }
 }
 
-/// Compute the spam score of `msg`, based on the pre-trained model.
+/// Compute the spam score of `msg`, based on a pre-trained model.
 /// The higher the score, the stronger the liklihood that `msg` is a spam is.
 pub fn score(msg: &str) -> Result<f32, io::Error> {
     let mut file = File::open(DEFAULT_FILE_PATH)?;
     Classifier::new_from_pre_trained(&mut file).map(|classifier| classifier.score(msg))
 }
 
-/// Identify whether `msg` is a spam or not, based on the pre-trained model.
+/// Identify whether `msg` is a spam or not, based on a pre-trained model.
 pub fn identify(msg: &str) -> Result<bool, io::Error> {
     let score = score(msg)?;
     let is_spam = score > SPAM_PROB_THRESHOLD;

@@ -49,7 +49,7 @@
 //!
 //! ### Train your own model
 //!
-//! You can train a new model from scratch, save it as JSON to reload it later:
+//! You can train a new model from scratch:
 //!
 //! ```
 //! extern crate bayespam;
