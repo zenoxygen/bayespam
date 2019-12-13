@@ -9,7 +9,7 @@ A simple bayesian spam classifier.
 
 ## About
 
-Bayesam is inspired by [Naive Bayes classifiers](https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering), a popular statistical technique of e-mail filtering.
+Bayespam is inspired by [Naive Bayes classifiers](https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering), a popular statistical technique of e-mail filtering.
 
 Here, the message to be identified is cut into simple words, also called tokens.
 That are compared to all the corpus of messages (spam or not), to determine the frequency of different tokens in both categories.
@@ -32,6 +32,8 @@ bayespam = "1.0.0"
 ```
 
 ### Use the pre-trained model provided
+
+Add the [model.json](model.json) file to your **package root**.
 
 ```rust
 extern crate bayespam;
