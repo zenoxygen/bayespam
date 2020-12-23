@@ -4,6 +4,7 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_writer, to_writer_pretty};
+use unicode_segmentation::UnicodeSegmentation;
 
 const DEFAULT_FILE_PATH: &str = "model.json";
 const INITIAL_RATING: f32 = 0.5;
@@ -44,18 +45,10 @@ impl Classifier {
         Ok(())
     }
 
-    /// Split `msg` into a list of words which contains only alphabetic letters.
-    /// Keep only words with a length greater than 2.
+    /// Split `msg` into a list of words.
     fn load_word_list(msg: &str) -> Vec<String> {
-        msg.replace(
-            |c: char| !(c.is_lowercase() || c.is_uppercase() || c.is_whitespace() || c == ':'),
-            "",
-        )
-        .trim()
-        .split_whitespace()
-        .map(|s| s.to_lowercase())
-        .filter(|s| s.len() > 2)
-        .collect()
+        let word_list = msg.unicode_words().collect::<Vec<&str>>();
+        word_list.iter().map(|word| word.to_string()).collect()
     }
 
     /// Train the classifier with a spam `msg`.
@@ -185,6 +178,30 @@ mod tests {
 
         // Identify a typical ham message
         let ham = "Hi Bob, can you send me your machine learning homework?";
+        let is_spam = classifier.identify(ham);
+        assert!(!is_spam);
+    }
+
+    #[test]
+    fn test_new_unicode() {
+        // Create a new classifier with an empty model
+        let mut classifier = Classifier::new();
+
+        // Train the classifier with a new spam example
+        let spam = "Bon plan pour Nöel: profitez de -50% sur le 2ème article.";
+        classifier.train_spam(spam);
+
+        // Train the classifier with a new ham example
+        let ham = "Vous êtes tous cordialement invités à notre repas de Noël.";
+        classifier.train_ham(ham);
+
+        // Identify a typical spam message
+        let spam = "Préparez les fêtes de Nöel: 1 article offert!";
+        let is_spam = classifier.identify(spam);
+        assert!(is_spam);
+
+        // Identify a typical ham message
+        let ham = "Pourras-tu être des nôtres pour le repas de Noël? ééàààà";
         let is_spam = classifier.identify(ham);
         assert!(!is_spam);
     }
