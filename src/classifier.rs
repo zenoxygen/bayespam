@@ -201,7 +201,7 @@ mod tests {
         assert!(is_spam);
 
         // Identify a typical ham message
-        let ham = "Pourras-tu être des nôtres pour le repas de Noël? ééàààà";
+        let ham = "Pourras-tu être des nôtres pour le repas de Noël?";
         let is_spam = classifier.identify(ham);
         assert!(!is_spam);
     }
